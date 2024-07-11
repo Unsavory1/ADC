@@ -3,14 +3,25 @@
 #define Ctrl_Countflag (1 << 16)
 #define EOC_flag 0x02
 
-int val = 0;
+int adc_val = 0;
 
 void ADC_Config(void);
 void GPIO_Config(void);
 void delay(int ms);
 void ADC1_2_IRQHandler(void);
 
-int main() {}
+int main() {
+
+  ADC_Config();
+  GPIO_Config();
+
+  while (1) {
+    ADC1->CR2 |= (1 << 22);
+    ADC1_2_IRQHandler(); // waits for conversion to complete
+    int pwm_value = (adc_val * TIM2->ARR) / 4095;
+    TIM2->CCR1 = pwm_value;
+  }
+}
 
 void delay(int ms) {
   SysTick->LOAD = 9000;
@@ -48,6 +59,6 @@ void ADC_Config(void) {
 
 void ADC1_2_IRQHandler(void) {
   if (ADC1->SR & EOC_flag) {
-    val = ADC1->DR; // clearing the eoc flag by reading the data register
+    adc_val = ADC1->DR; // clearing the eoc flag by reading the data register
   }
 }
