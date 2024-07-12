@@ -1,0 +1,11 @@
+{
+    "cmsis-csolution.actions": [
+        {
+            "path": "ADC.csolution.yml",
+            "target": "STM32F103C6",
+            "config": {
+                "run": "Flash Device"
+            }
+        }
+    ]
+}

@@ -8,12 +8,14 @@ int adc_val = 0;
 void ADC_Config(void);
 void GPIO_Config(void);
 void delay(int ms);
+void PWM_Config(void);
 void ADC1_2_IRQHandler(void);
 
 int main() {
 
   ADC_Config();
   GPIO_Config();
+  PWM_Config();
 
   while (1) {
     ADC1->CR2 |= (1 << 22);
@@ -36,9 +38,10 @@ void delay(int ms) {
 }
 
 void GPIO_Config(void) {
-  RCC->APB2ENR |= (1 << 2); // enables pin A
-  RCC->APB2ENR |= (1 << 0); // enables alternate io
-  GPIOA->CRL |= (1 <<);
+  RCC->APB2ENR |= (1 << 2); // Enable GPIOA clock
+  RCC->APB2ENR |= (1 << 0); // Enable AFIO clock
+  GPIOA->CRL |=
+      (1 << 1) | (1 << 3); // Configure PA0 as alternate function push-pull
 }
 
 void ADC_Config(void) {
@@ -61,4 +64,13 @@ void ADC1_2_IRQHandler(void) {
   if (ADC1->SR & EOC_flag) {
     adc_val = ADC1->DR; // clearing the eoc flag by reading the data register
   }
+}
+void PWM_Config(void) {
+  RCC->APB1ENR |= (1 << 0); // Enable TIM2 clock
+  TIM2->PSC = 72 - 1;       // Prescaler value
+  TIM2->ARR = 1000 - 1;     // Auto-reload value
+  TIM2->CCMR1 |= (6 << 4);  // PWM mode 1
+  TIM2->CCER |= (1 << 0);   // Enable TIM2 channel 1
+  TIM2->CR1 |= (1 << 7);    // Auto-reload preload enable
+  TIM2->CR1 |= (1 << 0);    // Enable TIM2
 }
